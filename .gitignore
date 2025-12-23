@@ -1,0 +1,13 @@
+# NODE MODULES
+node_modules
+
+# VS CODE CACHE
+.vscode
+
+# COMPILER FILES
+/dist
+
+# BUILDS
+out/
+release/
+build/

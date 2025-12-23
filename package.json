@@ -1,0 +1,24 @@
+{
+  "name": "markpad",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "electron": "^39.2.7",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "katex": "^0.16.27",
+    "marked": "^17.0.1"
+  }
+}
