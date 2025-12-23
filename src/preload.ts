@@ -1,5 +1,6 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    // temporary stub for files hierachy - see index.html
+    selectFolder: () => ipcRenderer.invoke('select-folder'),
+    readFile: (path: string) => ipcRenderer.invoke('read-file', path)
 });

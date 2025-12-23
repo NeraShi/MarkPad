@@ -57,3 +57,54 @@ editor.addEventListener('scroll', () => {
 });
 
 updateLineNumbers();
+
+
+// ================= FILE SYSTEM ACCESS =================
+
+interface FileData { name: string, path: string; }
+declare const electronAPI: {
+    selectFolder: () => Promise<{ folderPath: string, files: FileData[] } | null>;
+    readFile: (path: string) => Promise<string>;
+};
+
+const fileListContainer = document.querySelector('.file-list') as HTMLDivElement;
+const explorerTitle = document.querySelector('.sidebar-title') as HTMLDivElement;
+
+explorerTitle.style.cursor = 'pointer';
+
+explorerTitle.addEventListener('click', async () => {
+    const result = await electronAPI.selectFolder();
+
+    if (result) {
+        fileListContainer.innerHTML = '';
+
+        result.files.forEach(file => {
+            const item = document.createElement('div');
+            const currentPath = String(file.path);
+            item.className = 'file-item';
+            item.textContent = file.name;
+
+            item.addEventListener('click', async () => {
+                if (!currentPath) {
+                    console.error("The file's path is undefined!");
+                    return;
+                }
+                
+                try {
+                    const content = await electronAPI.readFile(currentPath);
+                    editor.value = content;
+                    updateLineNumbers();
+    
+                    if (editorWrapper.classList.contains('hidden')) {
+                        toggleBtn.click();
+                    }
+                } catch (err) {
+                    console.log("Clicked on file with path: ", currentPath);
+                    console.error("Error on file read: ", err);
+                }
+            });
+
+            fileListContainer.appendChild(item);
+        });
+    }
+});
