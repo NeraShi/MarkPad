@@ -56,3 +56,31 @@ ipcMain.handle('select-folder', async () => {
 ipcMain.handle('read-file', async (event, filePath: string) => {
     return fs.readFileSync(filePath, 'utf-8');
 });
+
+
+// ================= SAVE FILES =================
+
+// save changes in an existing files
+ipcMain.handle('save-file', async (event, filePath: string, content: string) => {
+    try {
+        fs.writeFileSync(filePath, content, 'utf-8');
+        return { success: true };
+    } catch (error: any) {
+        console.log("Ошибка сохранения: ", error)
+        return { success: false, error: error };
+    }
+}); 
+
+// save as a new file
+ipcMain.handle('save-as-dialog', async (event, content: string) => {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+        title: 'Save new file',
+        defaultPath: 'untitled-1.md',
+        filters: [{ name: 'Markdown', extensions: ['md'] }]
+    });
+
+    if (canceled || !filePath) return null;
+
+    fs.writeFileSync(filePath, content, 'utf8');
+    return filePath;
+});

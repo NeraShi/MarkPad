@@ -59,16 +59,46 @@ editor.addEventListener('scroll', () => {
 updateLineNumbers();
 
 
-// ================= FILE SYSTEM ACCESS =================
+// ===============================================
+// ================= FILE SYSTEM =================
+// ===============================================
 
 interface FileData { name: string, path: string; }
 declare const electronAPI: {
     selectFolder: () => Promise<{ folderPath: string, files: FileData[] } | null>;
     readFile: (path: string) => Promise<string>;
+
+    saveFile: (path: string, content: string) => Promise<{ success: boolean, error?: string }>;
+    saveAs: (content: string) => Promise<string | null>;
 };
 
 const fileListContainer = document.querySelector('.file-list') as HTMLDivElement;
 const explorerTitle = document.querySelector('.sidebar-title') as HTMLDivElement;
+
+let currentPath: string | null = null;
+let lastSavedContent: string = '';
+let activeFileElement: HTMLElement | null = null;
+
+
+// ================= KEEP TRACK OF FILE CHANGES =================
+
+const checkChanges = () => {
+    if (!activeFileElement) return;
+
+    if (editor.value !== lastSavedContent) {
+        activeFileElement.classList.add('modified');
+    } else {
+        activeFileElement.classList.remove('modified');
+    }
+}
+
+editor.addEventListener('input', () => {
+    updateLineNumbers();
+    checkChanges();
+});
+
+
+// ================= FILE SYSTEM ACESS =================
 
 explorerTitle.style.cursor = 'pointer';
 
@@ -80,11 +110,16 @@ explorerTitle.addEventListener('click', async () => {
 
         result.files.forEach(file => {
             const item = document.createElement('div');
-            const currentPath = String(file.path);
             item.className = 'file-item';
             item.textContent = file.name;
 
             item.addEventListener('click', async () => {
+                if (activeFileElement) activeFileElement.classList.remove('active')
+
+                currentPath = String(file.path);
+                activeFileElement = item;
+                activeFileElement.classList.add('active');
+
                 if (!currentPath) {
                     console.error("The file's path is undefined!");
                     return;
@@ -93,7 +128,9 @@ explorerTitle.addEventListener('click', async () => {
                 try {
                     const content = await electronAPI.readFile(currentPath);
                     editor.value = content;
+                    lastSavedContent = content;
                     updateLineNumbers();
+                    activeFileElement.classList.remove('modified');
     
                     if (editorWrapper.classList.contains('hidden')) {
                         toggleBtn.click();
@@ -106,5 +143,37 @@ explorerTitle.addEventListener('click', async () => {
 
             fileListContainer.appendChild(item);
         });
+    }
+});
+
+
+// ================= SAVE FILES =================
+
+async function handleSave() {
+    const content = editor.value;
+
+    if (currentPath) {
+        const result = await electronAPI.saveFile(currentPath, content);
+        if (result.success) { 
+            lastSavedContent = content;
+            if (activeFileElement) activeFileElement.classList.remove('modified');
+
+            console.log("The file with path ", currentPath, " was saved successfully."); 
+        }
+        else { console.error("Save failed: ", result.error); }
+    } else {
+        const newPath = await String(electronAPI.saveAs(content));
+        if (newPath) {
+            currentPath = newPath;
+            lastSavedContent = content;
+            console.log("Created new file at: ", currentPath);
+        }
+    }
+}
+
+window.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSave();
     }
 });
