@@ -84,3 +84,22 @@ ipcMain.handle('save-as-dialog', async (event, content: string) => {
     fs.writeFileSync(filePath, content, 'utf8');
     return filePath;
 });
+
+
+// ================= SAVE FILES =================
+
+ipcMain.handle('rename-file', async (event, oldPath: string, newName: string) => {
+    try {
+        const directory = path.dirname(oldPath);
+        const newPath = path.join(directory, newName.endsWith('.md') ? newName : `${newName}.md`);
+        
+        if (fs.existsSync(newPath)) {
+            return { success: false, error: 'A file with this name already exists!' };
+        }
+
+        fs.renameSync(oldPath, newPath);
+        return { success: true, newPath };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});

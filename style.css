@@ -239,3 +239,14 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
     background: #51597d;
 }
+
+
+/* ================= RENAME DIALOG ================= */
+
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal.hidden { display: none; }
+.modal-content { background: #1e1e1e; padding: 20px; border-radius: 8px; border: 1px solid #333; }
+.modal-content input { background: #131313; color: white; border: 1px solid #444; padding: 5px; width: 250px; }

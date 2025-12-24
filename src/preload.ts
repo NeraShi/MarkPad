@@ -6,4 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     saveFile: (path: string, content: string) => ipcRenderer.invoke('save-file', path, content),
     saveAs: (content: string) => ipcRenderer.invoke('save-as-dialog', content),
+
+    renameFile: (oldPath: string, newName: string) => ipcRenderer.invoke('rename-file', oldPath, newName)
 });
